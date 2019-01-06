@@ -37,6 +37,7 @@ router.get("one", async ctx => {
 
 router.post("/create", async ctx => {
     let { name, place, phone } = ctx.request.body;
+    let time = new Date().toJSON.substring(0, 10);
 
     let selectSQL = `SELECT * from departments where department_name='${name}'`;
     let ifEXIST;
@@ -51,8 +52,8 @@ router.post("/create", async ctx => {
         message = "这个科室已在记录中";
     } else {
         let addSQL =
-            "INSERT INTO departments(department_name, department_place, department_phone) VALUE (?,?,?)";
-        let addParams = [name, place, phone];
+            "INSERT INTO departments(department_name, department_place, department_phone,create_time) VALUE (?,?,?,?)";
+        let addParams = [name, place, phone, time];
         try {
             res = await db(addSQL, addParams);
             message = "添加科室完成";
