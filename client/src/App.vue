@@ -9,6 +9,7 @@
 export default {
     name: 'App',
     mounted() {
+
         let designSize = 1920; // 设计图尺寸
         let html = document.documentElement;
         let wW = html.clientWidth;// 窗口宽度

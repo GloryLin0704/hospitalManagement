@@ -12,6 +12,42 @@
             class="dialog"
             @add_close="add_close"
         ></add>
+        <div class="search">
+
+            <select
+                name="area"
+                v-model="type"
+            > <br />
+                <option value="0">病历号</option>
+                <option value="1">病房号</option>
+                <option value="2">医生证号</option>
+            </select>
+
+            <input
+                type="text"
+                class="searchInput"
+                v-model="searchText"
+            >
+
+            <div class="right">
+                <div
+                    class="index-button"
+                    style="background:rgb(103, 194, 58)"
+                    @click="search"
+                >查询</div>
+            </div>
+
+            <div class="right">
+                <div
+                    class="index-button"
+                    @click="handleAdd"
+                >新增</div>
+            </div>
+
+            <div class="total">
+                <p>总计: {{total}}</p>
+            </div>
+        </div>
         <el-table
             :data="tableData"
             class="left"
@@ -22,7 +58,7 @@
             >
                 <template slot-scope="scope">
                     <i class="el-icon-time"></i>
-                    <span style="margin-left: 10px">{{ scope.row.date }}</span>
+                    <span style="margin-left: 10px">{{ scope.row.create_time }}</span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -34,14 +70,14 @@
                         trigger="hover"
                         placement="top"
                     >
-                        <p>病历号: {{ scope.row.name }}</p>
-                        <p>病房号: {{ scope.row.address }}</p>
-                        <p>主管医生: {{ scope.row.address }}</p>
+                        <p>病历号: {{ scope.row.patient_id }}</p>
+                        <p>病房号: {{ scope.row.patient_ward }}</p>
+                        <p>主管医生: {{ scope.row.patient_doctor }}</p>
                         <div
                             slot="reference"
                             class="name-wrapper"
                         >
-                            <el-tag size="medium">{{ scope.row.name }}</el-tag>
+                            <el-tag size="medium">{{ scope.row.patient_name }}</el-tag>
                         </div>
                     </el-popover>
                 </template>
@@ -60,12 +96,6 @@
                 </template>
             </el-table-column>
         </el-table>
-        <div class="right">
-            <div
-                class="index-button"
-                @click="handleAdd"
-            >新增</div>
-        </div>
     </div>
 </template>
 
@@ -81,53 +111,71 @@ export default {
     components,
     data() {
         return {
+            searchText: "",
             detail_data: "",
-
             detail_show: false,
             add_show: false,
-            tableData: [{
-                date: '2016-05-02',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-            }, {
-                date: '2016-05-04',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1517 弄'
-            }, {
-                date: '2016-05-01',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1519 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }]
+            tableData: [],
+            total: "",
+            type: ""
         }
     },
     methods: {
         handleEdit(index, row) {
-            this.data = this.tableData[index]
+            this.detail_data = this.tableData[index]
             this.detail_show = true;
         },
         handleDelete(index, row) {
-            this.tableData.pop();
+            let id = this.tableData[index].patient_id
+            this.http.get(`/patients/delete?id=${id}`).then(res => {
+                this.getAllData()
+            }).catch(err => {
+                console.log(err)
+            })
+        },
+        search() {
+            console.log(this.type)
+            var id = this.searchText;
+            if (id === "") {
+                this.getAllData()
+            } else {
+                this.http.get(`/patients/one?id=${id}&type=${this.type}`).then(res => {
+                    if (res.data.res.length) {
+                        this.tableData = res.data.res
+                    } else {
+                        alert("没有这位病人")
+                    }
+                })
+            }
         },
         handleAdd() {
             this.add_show = true;
         },
-        detail_close() {
+        detail_close(type) {
             this.detail_show = false;
+            if (type) {
+                this.getAllData()
+            }
         },
         add_close() {
             this.add_show = false;
+            this.getAllData()
+        },
+        getAllData() {
+            this.http.get('/patients/all').then(res => {
+                this.tableData = res.data.res;
+                this.total = res.data.res.length
+            })
         }
     },
     mounted() {
-        // document.getElementById("box").style.width = '8rem';
         document.getElementById("box").style.padding = '0 1.7rem';
+        this.type = "0";
+        this.getAllData()
     }
 }
 </script>
+
 
 <style>
 .title {
@@ -147,18 +195,24 @@ export default {
 .el-table_1_column_3 {
     width: 30%;
 }
-.left,
 .right {
     display: inline-block;
-    vertical-align: top;
-}
-.left {
-    width: 88%;
-}
-.right {
+    vertical-align: middle;
     position: relative;
     width: 8%;
-    height: 80px;
+    height: 100%;
+}
+.total {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    width: 8%;
+    top: -2%;
+    color: white;
+    background: rgb(98, 162, 226);
+    padding: 0.02rem;
+    font-size: 16px;
+    user-select: none;
 }
 .index-button {
     user-select: none;
@@ -174,6 +228,18 @@ export default {
 .index-button:active {
     position: relative;
     top: 0.14rem;
+}
+.search {
+    font-size: 20px;
+    text-align: center;
+    height: 0.6rem;
+}
+.searchInput {
+    height: 0.23rem;
+    text-indent: 3px;
+    border: 1px solid rgb(57, 156, 236);
+    vertical-align: middle;
+    display: inline-block;
 }
 </style>
 

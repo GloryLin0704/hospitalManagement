@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Index from "@/page/index";
+import Login from "@/page/index/login";
 import Departments from "@/page/departments";
 import Wards from "@/page/wards";
 import Doctors from "@/page/doctors";
@@ -8,12 +9,17 @@ import Patients from "@/page/patients";
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   routes: [
     {
-      path: "/",
+      path: "/index",
       name: "Index",
       component: Index
+    },
+    {
+      path: "/",
+      name: "Login",
+      component: Login
     },
     {
       path: "/departments",
@@ -37,3 +43,22 @@ export default new Router({
     }
   ]
 });
+
+router.beforeEach((to, from, next) => {
+  let login = parseInt(sessionStorage.login);
+  let path = to.path;
+  if (path === "/") {
+    next();
+    return;
+  }
+
+  if (login) {
+    next();
+  } else {
+    next({
+      path: "/"
+    });
+  }
+});
+
+export default router;

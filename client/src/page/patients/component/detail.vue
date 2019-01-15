@@ -61,17 +61,17 @@
 
 <script>
 export default {
-    props:[
+    props: [
         'detail'
     ],
     data() {
         return {
             labelPosition: 'left',
-            id: "123",
-            name: "123",
-            sex: "123",
-            doctor: "123",
-            ward_id: "123",
+            id: "",
+            name: "",
+            sex: "",
+            doctor: "",
+            ward_id: "",
             leftButton: "修改",
             rightButton: "关闭",
             status: true
@@ -88,6 +88,43 @@ export default {
                 this.rightButton = "取消"
                 this.status = false
             } else {
+                let { id, name, sex, doctor, ward_id } = this;
+
+                let detail = {
+                    id,
+                    name,
+                    sex,
+                    doctor,
+                    ward: ward_id,
+                    oldid: this.detail.patient_id
+                }
+                if (window.isNaN(parseInt(id))) {
+                    alert("请正确输入病历号")
+                    return;
+
+                } else if (window.isNaN(parseInt(doctor))) {
+                    alert("请正确输入主管医生")
+                    return;
+                } else if (window.isNaN(parseInt(ward_id))) {
+                    alert("请正确输入病房号")
+                    return;
+                } else if (!name || !sex) {
+                    alert("请填写所有信息")
+                    return;
+                }
+
+                this.http.post('/patients/update', detail).then(res => {
+                    console.log(res)
+                    alert('修改完成')
+                    this.statue = true;
+                    this.$emit("detailDialog", "1")
+                }).catch(err => {
+                    console.log(err)
+                    alert("该病历号已存在或其他信息不存在")
+                    this.$emit("detailDialog")
+                })
+
+
             }
         },
         close() {
@@ -105,9 +142,11 @@ export default {
     },
     mounted() {
         console.log(this.detail)
-        this.department = this.detail.address
-        this.palce = this.detail.date
-        this.phone = this.detail.name
+        this.id = this.detail.patient_id
+        this.name = this.detail.patient_name
+        this.sex = this.detail.patient_sex
+        this.doctor = this.detail.patient_doctor
+        this.ward_id = this.detail.patient_ward
     },
 }
 </script>

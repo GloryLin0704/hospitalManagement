@@ -11,18 +11,10 @@
                     >
                 </div>
                 <div>
-                    <span>开始床位</span>
+                    <span>空闲床位</span>
                     <input
                         type="text"
-                        v-model="first_num"
-                        disabled
-                    >
-                </div>
-                <div>
-                    <span>最后床位</span>
-                    <input
-                        type="text"
-                        v-model="last_num"
+                        v-model="free_num"
                         disabled
                     >
                 </div>
@@ -59,10 +51,9 @@ export default {
     data() {
         return {
             labelPosition: 'left',
-            id: "123",
-            first_num: "123",
-            last_num: "123",
-            department: "123",
+            id: "",
+            free_num: "",
+            department: "",
             leftButton: "修改",
             rightButton: "关闭",
             status: true
@@ -79,6 +70,37 @@ export default {
                 this.rightButton = "取消"
                 this.status = false
             } else {
+                let { id, free_num, department } = this;
+
+                if (window.isNaN(parseInt(id))) {
+                    alert("请正确输入病房号")
+                    return;
+                } else if (window.isNaN(parseInt(free_num))) {
+                    alert("请正确输入空闲病房数")
+                    return;
+                } else if (!department) {
+                    alert("请正确输入所属科室")
+                    return;
+                }
+
+                let detail = {
+                    id,
+                    freeNum:free_num,
+                    department,
+                    oldid: this.detail.ward_id
+                }
+
+                console.log(detail)
+
+                this.http.post('/wards/update', detail).then(res => {
+                    alert('修改完成')
+                    this.statue = true;
+                    this.$emit("detailDialog", "1")
+                }).catch(err => {
+                    console.log(err)
+                    alert("该病房已存在或该科室不存在")
+                    this.$emit("detailDialog")
+                })
             }
         },
         close() {
@@ -95,10 +117,9 @@ export default {
         }
     },
     mounted() {
-        console.log(this.detail)
-        this.department = this.detail.address
-        this.palce = this.detail.date
-        this.phone = this.detail.name
+        this.id = this.detail.ward_id
+        this.free_num = this.detail.ward_freeNum
+        this.department = this.detail.ward_department
     },
 }
 </script>

@@ -24,10 +24,10 @@
                     >
                 </div>
                 <div>
-                    <span>年龄</span>
+                    <span>联系电话</span>
                     <input
                         type="text"
-                        v-model="age"
+                        v-model="phone"
                     >
                 </div>
                 <div>
@@ -62,7 +62,7 @@ export default {
             id: "",
             name: "",
             call: "",
-            age: "",
+            phone: "",
             department: "",
             leftButton: "添加",
             rightButton: "关闭",
@@ -71,10 +71,33 @@ export default {
     },
     methods: {
         change() {
-            var department = this.department;
-            var palce = this.palce;
+            var id = this.id;
+            var name = this.name
+            var call = this.call
             var phone = this.phone
-            console.log(department, palce, phone)
+            var department = this.department;
+
+            if (window.isNaN(parseInt(id))) {
+                alert("请正确输入证件号")
+                return;
+            } else if (window.isNaN(parseInt(phone))) {
+                alert("请正确输入医生电话")
+                return;
+            } else if (!department || !call || !name) {
+                alert("请填写所有信息")
+                return;
+            }
+
+            var data = { id, name, call, phone, department }
+            this.http.post(`/doctors/create`, data).then(res => {
+                alert("添加成功")
+                this.$emit("add_close")
+            }).catch(err => {
+                console.log(err)
+                alert("该工作证号已存在或该科室不存在")
+                this.$emit("add_close")
+            })
+
         },
         close() {
             this.$emit("add_close")

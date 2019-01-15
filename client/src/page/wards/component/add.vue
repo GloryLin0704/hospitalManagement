@@ -7,23 +7,13 @@
                     <input
                         type="text"
                         v-model="id"
-                        disabled
                     >
                 </div>
                 <div>
-                    <span>开始床位</span>
+                    <span>空闲床位</span>
                     <input
                         type="text"
-                        v-model="first_num"
-                        disabled
-                    >
-                </div>
-                <div>
-                    <span>最后床位</span>
-                    <input
-                        type="text"
-                        v-model="last_num"
-                        disabled
+                        v-model="free_num"
                     >
                 </div>
                 <div>
@@ -31,7 +21,6 @@
                     <input
                         type="text"
                         v-model="department"
-                        disabled
                     >
                 </div>
                 <div class="button">
@@ -57,8 +46,7 @@ export default {
         return {
             labelPosition: 'left',
             id: "",
-            first_num: "",
-            last_num: "",
+            free_num: "",
             department: "",
             leftButton: "添加",
             rightButton: "关闭",
@@ -66,10 +54,29 @@ export default {
     },
     methods: {
         change() {
+            var id = this.id;
+            var freeNum = this.free_num;
             var department = this.department;
-            var palce = this.palce;
-            var phone = this.phone
-            console.log(department, palce, phone)
+
+            if (window.isNaN(parseInt(id))) {
+                alert("请正确输入病房号")
+                return;
+            } else if (window.isNaN(parseInt(freeNum))) {
+                alert("请正确输入空闲病房数")
+                return;
+            } else if (!department) {
+                alert("请正确输入所属科室")
+                return;
+            }
+            
+            var data = { id, freeNum, department }
+            this.http.post(`/wards/create`, data).then(res => {
+                alert("添加成功")
+                this.$emit("add_close")
+            }).catch(err => {
+                alert("该病房已存在或该科室不存在")
+                this.$emit("add_close")
+            })
         },
         close() {
             this.$emit("add_close")

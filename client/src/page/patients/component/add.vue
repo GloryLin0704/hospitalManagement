@@ -59,21 +59,52 @@ export default {
     data() {
         return {
             labelPosition: 'left',
-            id: "123",
-            name: "123",
-            sex: "123",
-            doctor: "123",
-            ward_id: "123",
+            id: "",
+            name: "",
+            sex: "",
+            doctor: "",
+            ward_id: "",
             leftButton: "添加",
             rightButton: "关闭",
         };
     },
     methods: {
         change() {
-            var department = this.department;
-            var palce = this.palce;
-            var phone = this.phone
-            console.log(department, palce, phone)
+            var id = this.id;
+            var name = this.name
+            var sex = this.sex
+            var doctor = this.doctor
+            var ward = this.ward_id;
+
+            if (window.isNaN(parseInt(id))) {
+                alert("请正确输入病历号")
+                return;
+
+            } else if (window.isNaN(parseInt(doctor))) {
+                alert("请正确输入主管医生工作证号")
+                return;
+            } else if (window.isNaN(parseInt(ward))) {
+                alert("请正确输入病房号")
+                return;
+            } else if (!name || !sex) {
+                alert("请填写所有信息")
+                return;
+            }
+
+            var data = { id, name, sex, doctor, ward }
+            this.http.post(`/patients/create`, data).then(res => {
+                console.log(res)
+                if (res.data.code) {
+                    alert("该病房已无空闲病床")
+                    this.$emit("add_close")
+                    return
+                }
+                alert("添加成功")
+                this.$emit("add_close")
+            }).catch(err => {
+                alert("该病历号已存在或其他信息不存在")
+                this.$emit("add_close")
+            })
         },
         close() {
             this.$emit("add_close")

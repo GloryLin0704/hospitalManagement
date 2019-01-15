@@ -6,7 +6,7 @@
                     <span>科名</span>
                     <input
                         type="text"
-                        v-model="department"
+                        v-model="name"
                         disabled
                     >
                 </div>
@@ -14,7 +14,7 @@
                     <span>科地址</span>
                     <input
                         type="text"
-                        v-model="palce"
+                        v-model="place"
                         disabled
                     >
                 </div>
@@ -51,9 +51,9 @@ export default {
     data() {
         return {
             labelPosition: 'left',
-            department: "123",
-            palce: "123",
-            phone: "123",
+            name: "",
+            place: "",
+            phone: "",
             leftButton: "修改",
             rightButton: "关闭",
             status: true
@@ -70,6 +70,28 @@ export default {
                 this.rightButton = "取消"
                 this.status = false
             } else {
+                let { name, place, phone } = this;
+                let detail = {
+                    name,
+                    place,
+                    phone,
+                    oldName: this.detail.department_name
+                }
+
+                if (!name || !palce || !phone) {
+                    alert("请填写所有信息")
+                    return;
+                }
+
+                this.http.post('/departments/update', detail).then(res => {
+                    alert('修改完成')
+                    this.statue = true;
+                    this.$emit("detailDialog", "1")
+                }).catch(err => {
+                    console.log(err)
+                    alert("该科室已存在")
+                    this.$emit("detailDialog")
+                })
             }
         },
         close() {
@@ -86,10 +108,9 @@ export default {
         }
     },
     mounted() {
-        console.log(this.detail)
-        this.department = this.detail.address
-        this.palce = this.detail.date
-        this.phone = this.detail.name
+        this.name = this.detail.department_name
+        this.place = this.detail.department_place
+        this.phone = this.detail.department_phone
     },
 }
 </script>

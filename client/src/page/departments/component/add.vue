@@ -13,7 +13,7 @@
                     <span>科地址</span>
                     <input
                         type="text"
-                        v-model="palce"
+                        v-model="place"
                     >
                 </div>
                 <div>
@@ -46,7 +46,7 @@ export default {
         return {
             labelPosition: 'left',
             department: "",
-            palce: "",
+            place: "",
             phone: "",
             leftButton: "添加",
             rightButton: "关闭",
@@ -54,10 +54,28 @@ export default {
     },
     methods: {
         change() {
-            var department = this.department;
-            var palce = this.palce;
+            var name = this.department;
+            var place = this.place;
             var phone = this.phone
-            console.log(department, palce, phone)
+            console.log(name, place, phone)
+            var data = {
+                name,
+                place,
+                phone
+            }
+
+            if (!name || !palce || !phone) {
+                alert("请填写所有信息")
+                return;
+            }
+
+            this.http.post(`/departments/create`, data).then(res => {
+                alert("添加成功")
+                this.$emit("add_close")
+            }).catch(err => {
+                alert("已存在该科室")
+                this.$emit("add_close")
+            })
         },
         close() {
             this.$emit("add_close")

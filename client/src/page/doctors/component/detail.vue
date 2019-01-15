@@ -30,7 +30,7 @@
                     <span>年龄</span>
                     <input
                         type="text"
-                        v-model="age"
+                        v-model="phone"
                         disabled
                     >
                 </div>
@@ -67,11 +67,11 @@ export default {
     data() {
         return {
             labelPosition: 'left',
-            id: "123",
-            name: "123",
-            call: "123",
-            age: "123",
-            department: "123",
+            id: "",
+            name: "",
+            call: "",
+            phone: "",
+            department: "",
             leftButton: "修改",
             rightButton: "关闭",
             status: true
@@ -88,6 +88,39 @@ export default {
                 this.rightButton = "取消"
                 this.status = false
             } else {
+                let { id, name, call, phone, department } = this;
+
+                let detail = {
+                    id,
+                    name,
+                    call,
+                    phone,
+                    department,
+                    oldid: this.detail.doctor_id
+                }
+
+                if (window.isNaN(parseInt(id))) {
+                    alert("请正确输入证件号")
+                    return;
+                } else if (window.isNaN(parseInt(phone))) {
+                    alert("请正确输入医生电话")
+                    return;
+                } else if (!department || !call || !name) {
+                    alert("请填写所有信息")
+                    return;
+                }
+
+                this.http.post('/doctors/update', detail).then(res => {
+                    console.log(res)
+                    alert('修改完成')
+                    this.statue = true;
+                    this.$emit("detailDialog", "1")
+                }).catch(err => {
+                    console.log(err)
+                    alert("该工作证号已存在或该科室不存在")
+                    this.$emit("detailDialog")
+                })
+
             }
         },
         close() {
@@ -104,10 +137,12 @@ export default {
         }
     },
     mounted() {
-        console.log(this.detail)
-        this.department = this.detail.address
-        this.palce = this.detail.date
-        this.phone = this.detail.name
+        this.id = this.detail.doctor_id
+        this.call = this.detail.doctor_call
+        this.phone = this.detail.doctor_phone
+        this.name = this.detail.doctor_name
+        this.department = this.detail.doctor_department
+
     },
 }
 </script>
