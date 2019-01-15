@@ -3,7 +3,7 @@ const db = require("../db");
 let res, message;
 
 router.get("/all", async ctx => {
-    let selectSQL = `SELECT department_name from departments`;
+    let selectSQL = `SELECT * from departments`;
     try {
         res = await db(selectSQL);
         message = "查询完毕";
@@ -18,7 +18,7 @@ router.get("/all", async ctx => {
     });
 });
 
-router.get("one", async ctx => {
+router.get("/one", async ctx => {
     let { name } = ctx.request.query;
     let selectSQL = `SELECT * FROM departments WHERE department_name='${name}'`;
     try {
@@ -37,7 +37,7 @@ router.get("one", async ctx => {
 
 router.post("/create", async ctx => {
     let { name, place, phone } = ctx.request.body;
-    let time = new Date().toJSON.substring(0, 10);
+    let time = new Date().toJSON().substring(0, 10);
 
     let selectSQL = `SELECT * from departments where department_name='${name}'`;
     let ifEXIST;
@@ -49,7 +49,7 @@ router.post("/create", async ctx => {
     }
 
     if (ifEXIST.length) {
-        message = "这个科室已在记录中";
+        throw new Error("already exist");
     } else {
         let addSQL =
             "INSERT INTO departments(department_name, department_place, department_phone,create_time) VALUE (?,?,?,?)";
@@ -81,6 +81,7 @@ router.post("/update", async ctx => {
     } catch (error) {
         res = error;
         message = "更新失败";
+        throw new Error("lost");
     }
 
     return (ctx.body = {

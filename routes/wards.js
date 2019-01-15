@@ -3,7 +3,7 @@ const db = require("../db");
 let res, message;
 
 router.get("/all", async ctx => {
-    let selectSQL = `SELECT ward_id from wards`;
+    let selectSQL = `SELECT * from wards`;
     try {
         res = await db(selectSQL);
         message = "查询完毕";
@@ -18,7 +18,7 @@ router.get("/all", async ctx => {
     });
 });
 
-router.get("one", async ctx => {
+router.get("/one", async ctx => {
     let { id } = ctx.request.query;
     let selectSQL = `SELECT * FROM wards WHERE ward_id='${id}'`;
     try {
@@ -36,8 +36,8 @@ router.get("one", async ctx => {
 });
 
 router.post("/create", async ctx => {
-    let { id, firstNum, lastNum, department } = ctx.request.body;
-    let time = new Date().toJSON.substring(0, 10);
+    let { id, freeNum, department } = ctx.request.body;
+    let time = new Date().toJSON().substring(0, 10);
 
     let selectSQL = `SELECT * from wards where ward_id='${id}'`;
     let ifEXIST;
@@ -49,17 +49,16 @@ router.post("/create", async ctx => {
     }
 
     if (ifEXIST.length) {
-        message = "这个病房已在记录中";
+        throw new Error("already exist")
     } else {
         let addSQL =
-            "INSERT INTO wards(ward_id, ward_firstNum, ward_lastNum, ward_department, create_time) VALUE (?,?,?,?,?)";
-        let addParams = [id, firstNum, lastNum, department, time];
+            "INSERT INTO wards(ward_id, ward_freeNum, ward_department, create_time) VALUE (?,?,?,?)";
+        let addParams = [id, freeNum, department, time];
         try {
             res = await db(addSQL, addParams);
             message = "添加病房完成";
         } catch (err) {
-            res = err;
-            message = "添加病房失败";
+            throw new Error("reject")
         }
     }
 
@@ -70,16 +69,17 @@ router.post("/create", async ctx => {
 });
 
 router.post("/update", async ctx => {
-    let { id, firstNum, lastNum, department, oldid } = ctx.request.body;
+    let { id, freeNum, department, oldid } = ctx.request.body;
     let updateSQL =
-        "UPDATE wards set ward_id=?, ward_firstNum=?, ward_lastNum=?, ward_department=?, where ward_id=?";
-    let updataParams = [id, firstNum, lastNum, department, oldid];
+        "UPDATE wards set ward_id=?, ward_freeNum=?, ward_department=? where ward_id=?";
+    let updataParams = [id, freeNum, department, oldid];
 
     try {
         res = await db(updateSQL, updataParams);
         message = "更新数据完成";
     } catch (error) {
         res = error;
+        throw new Error("lost");
         message = "更新失败";
     }
 
